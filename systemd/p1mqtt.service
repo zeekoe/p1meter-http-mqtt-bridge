@@ -1,0 +1,32 @@
+[Unit]
+Description=p1mqtt P1 meter to Home Assistant MQTT bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=p1mqtt
+Group=p1mqtt
+WorkingDirectory=/opt/p1mqtt
+ExecStart=/usr/bin/java -XX:+ExitOnOutOfMemoryError -jar /opt/p1mqtt/p1mqtt.jar --config=/etc/p1mqtt/application.properties
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=p1mqtt
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

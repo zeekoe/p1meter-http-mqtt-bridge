@@ -1,0 +1,25 @@
+target/
+.git/
+.gitignore
+
+# never bake broker credentials into an image layer
+.env
+.env.*
+!.env.example
+
+*.log
+*.class
+*.jar
+
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+Dockerfile
+.dockerignore
+compose.yaml

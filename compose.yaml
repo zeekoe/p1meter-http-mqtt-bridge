@@ -1,0 +1,52 @@
+# p1mqtt - bridges P1 meter HTTP pushes into Home Assistant over MQTT.
+#
+#   cp .env.example .env      # fill in MQTT_SERVER (and credentials if the broker needs them)
+#   docker compose up -d --build
+#
+# `restart: unless-stopped` means the bridge comes back by itself after a reboot or a crash,
+# and stays stopped only when you stop it on purpose (`docker compose stop`).
+#
+# Only port 8267 is published. MQTT is an outbound client connection to the broker named in
+# .env, so the broker port (MQTT_PORT, 1883 by default) is NOT exposed by this container;
+# publish it on the broker itself for the hosts that need to reach it.
+
+services:
+  p1mqtt:
+    build:
+      context: .
+    image: p1mqtt:1.0.0
+    container_name: p1mqtt
+    restart: unless-stopped
+    ports:
+      - "${P1MQTT_HTTP_PORT:-8267}:8267"
+    environment:
+      # Any key from the configuration table can be set this way: prefix with P1MQTT_,
+      # upper-case it and turn '.' and camelCase into '_' (mqtt.clientId ->
+      # P1MQTT_MQTT_CLIENT_ID). Environment variables beat the properties file.
+      P1MQTT_MQTT_SERVER: "${MQTT_SERVER:?set MQTT_SERVER in .env (see .env.example)}"
+      P1MQTT_MQTT_PORT: "${MQTT_PORT:-1883}"
+      P1MQTT_MQTT_USERNAME: "${MQTT_USERNAME:-}"
+      P1MQTT_MQTT_PASSWORD: "${MQTT_PASSWORD:-}"
+      P1MQTT_MQTT_SSL: "${MQTT_SSL:-false}"
+      P1MQTT_MQTT_CLIENT_ID: "${MQTT_CLIENT_ID:-p1mqtt}"
+      P1MQTT_SERVER_TOKEN: "${SERVER_TOKEN:-}"
+      P1MQTT_LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+      # passed straight to the JVM, e.g. JAVA_TOOL_OPTIONS=-Xmx256m
+      JAVA_TOOL_OPTIONS: "${JAVA_TOOL_OPTIONS:--XX:MaxRAMPercentage=75}"
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Optional: settings from a properties file instead of the environment block above.
+    # Uncomment the volume and add P1MQTT_CONFIG: /etc/p1mqtt/application.properties to
+    # `environment`; the app then also reads that file (env still wins).
+    # volumes:
+    #   - type: bind
+    #     source: ./config/application.properties
+    #     target: /etc/p1mqtt/application.properties
+    #     read_only: true
+    #     bind:
+    #       create_host_path: false
