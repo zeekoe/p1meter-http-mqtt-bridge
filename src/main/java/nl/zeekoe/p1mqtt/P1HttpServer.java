@@ -120,7 +120,7 @@ public final class P1HttpServer {
                 respond(exchange, 200, "text/html; charset=utf-8", statusPage());
                 return;
             }
-            if ("/simple".equals(path)) {
+            if ("/simple".equals(path) || "/simple.html".equals(path)) {
                 respond(exchange, 200, "text/html; charset=utf-8", simpleStatusPage());
                 return;
             }
