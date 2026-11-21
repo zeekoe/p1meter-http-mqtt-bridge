@@ -176,11 +176,15 @@ public final class P1HttpServer {
     private String simpleStatusPage() {
         StringBuilder html = new StringBuilder();
         service.lastReading().ifPresent(reading -> {
-            html.append(reading.receivedAt()).append(" ; ");
+            html.append(reading.receivedAt());
             String powerUsage = publisher.snapshot().getOrDefault(SensorSpec.POWER_USAGE.id(), "-");
             String powerReturned = publisher.snapshot().getOrDefault(SensorSpec.POWER_RETURNED.id(), "-");
-            html.append(powerUsage).append(" ; ");
-            html.append("-").append(powerReturned);
+            if (!powerUsage.equals("0")) {
+                html.append(" ; ").append(powerUsage).append(" W (max=8kW)");
+            }
+            if (!powerReturned.equals("0")) {
+                html.append("-").append(powerReturned).append(" W");
+            }
         });
         return html.toString();
     }
