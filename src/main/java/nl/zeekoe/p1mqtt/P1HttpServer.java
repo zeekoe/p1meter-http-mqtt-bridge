@@ -120,6 +120,10 @@ public final class P1HttpServer {
                 respond(exchange, 200, "text/html; charset=utf-8", statusPage());
                 return;
             }
+            if ("/simple".equals(path)) {
+                respond(exchange, 200, "text/html; charset=utf-8", simpleStatusPage());
+                return;
+            }
             if (!READING_METHODS.contains(method)) {
                 rejectedCount.incrementAndGet();
                 respondError(exchange, 405, "method not allowed");
@@ -167,6 +171,18 @@ public final class P1HttpServer {
             }
             exchange.close();
         }
+    }
+
+    private String simpleStatusPage() {
+        StringBuilder html = new StringBuilder();
+        service.lastReading().ifPresent(reading -> {
+            html.append(reading.receivedAt()).append(" ; ");
+            String powerUsage = publisher.snapshot().getOrDefault(SensorSpec.POWER_USAGE.id(), "-");
+            String powerReturned = publisher.snapshot().getOrDefault(SensorSpec.POWER_RETURNED.id(), "-");
+            html.append(powerUsage).append(" ; ");
+            html.append("-").append(powerReturned);
+        });
+        return html.toString();
     }
 
     private Map<String, String> readParams(HttpExchange exchange) throws IOException {

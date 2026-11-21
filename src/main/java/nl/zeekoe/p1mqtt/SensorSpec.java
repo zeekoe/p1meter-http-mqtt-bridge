@@ -8,10 +8,10 @@ public enum SensorSpec {
 
     POWER_USAGE(
             "power_usage", "Power Usage", List.of("mEAV"),
-            "W", "power", "measurement", "mdi:flash", 0, false),
+            "W", "power", "measurement", "mdi:flash", 0, false, new BigDecimal("0"), new BigDecimal("12000")),
     POWER_RETURNED(
             "power_returned", "Power Returned", List.of("mEAT"),
-            "W", "power", "measurement", "mdi:solar-power", 0, false),
+            "W", "power", "measurement", "mdi:solar-power", 0, false, new BigDecimal("0"), new BigDecimal("3500")),
     ENERGY_IMPORTED(
             "energy_imported", "Energy Imported", List.of("mEVLT", "mEVHT"),
             "kWh", "energy", "total_increasing", "mdi:transmission-tower", 3, false),
@@ -40,9 +40,11 @@ public enum SensorSpec {
     private final String icon;
     private final int displayPrecision;
     private final boolean diagnostic;
+    private final BigDecimal validMin;
+    private final BigDecimal validMax;
 
     SensorSpec(String id, String displayName, List<String> sourceKeys, String unit, String deviceClass, String stateClass,
-               String icon, int displayPrecision, boolean diagnostic) {
+               String icon, int displayPrecision, boolean diagnostic, BigDecimal validMin, BigDecimal validMax) {
         this.id = id;
         this.displayName = displayName;
         this.sourceKeys = List.copyOf(sourceKeys);
@@ -52,6 +54,23 @@ public enum SensorSpec {
         this.icon = icon;
         this.displayPrecision = displayPrecision;
         this.diagnostic = diagnostic;
+        this.validMin = validMin;
+        this.validMax = validMax;
+    }
+
+    SensorSpec(String id, String displayName, List<String> sourceKeys, String unit, String deviceClass, String stateClass,
+               String icon, int displayPrecision, boolean diagnostic) {
+        this(id, displayName, sourceKeys, unit, deviceClass, stateClass, icon, displayPrecision, diagnostic, null, null);
+    }
+
+    public boolean isValid(BigDecimal reading) {
+        if (validMin == null || validMax == null) {
+            return true;
+        }
+        if (reading.compareTo(validMin) >= 0 && reading.compareTo(validMax) <= 0) {
+            return true;
+        }
+        return false;
     }
 
     public String id() {

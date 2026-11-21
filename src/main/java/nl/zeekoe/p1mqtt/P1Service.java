@@ -63,6 +63,11 @@ public final class P1Service {
                 problems.add(spec.id() + " missing (" + String.join("/", spec.sourceKeys()) + ")");
                 continue;
             }
+            if (!spec.isValid(value.get())) {
+                log.warn("Skipping invalid reading: {}, {}", spec.name(), value);
+                problems.add("Reading invalid: " + spec.name() + ", " + value);
+                continue;
+            }
             if (publisher.publishState(spec, Numbers.format(value.get()))) {
                 published++;
             } else {
